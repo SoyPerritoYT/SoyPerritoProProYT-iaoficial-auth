@@ -68,12 +68,22 @@ export default async function handler(req, res) {
   const user = await userResponse.json();
   if (!user.login) return res.status(401).send("No se pudo obtener la cuenta de GitHub.");
 
-    res.setHeader("Set-Cookie", [
+    const sessionPayload = Buffer.from(JSON.stringify({
+    token: token.access_token,
+    login: user.login,
+    permission: selectedPermission,
+    exp: Date.now() + 3600000
+  })).toString("base64url");
+  const sessionSecret = process.env.AUTH_GITHUB_SESSION_SECRET || clientSecret;
+  const sessionSignature = crypto.createHmac("sha256", sessionSecret).update(sessionPayload).digest("base64url");
+  const session = sessionPayload + "." + sessionSignature;
+
+  res.setHeader("Set-Cookie", [
     cookie("github_token", token.access_token, {maxAge:3600,httpOnly:true,secure:true,sameSite:"None"}),
     cookie("github_permission", selectedPermission, {maxAge:3600,httpOnly:true,secure:true,sameSite:"None"}),
     cookie("github_oauth_state", "", {maxAge:0,httpOnly:true,secure:true,sameSite:"Lax"}),
     cookie("github_oauth_permission", "", {maxAge:0,httpOnly:true,secure:true,sameSite:"Lax"})
   ]);
 
-  return res.redirect(mainUrl + "?github=connected&github_login=" + encodeURIComponent(user.login));
+  return res.redirect(mainUrl + "#github_token=" + encodeURIComponent(session));
 }
