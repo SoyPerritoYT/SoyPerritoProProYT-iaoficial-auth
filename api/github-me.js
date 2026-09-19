@@ -3,6 +3,8 @@ const MAIN_APP = "https://soyperritoproproyt-iaoficial.vercel.app";
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", MAIN_APP);
   res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Vary", "Origin");
 }
 
