@@ -19,9 +19,10 @@ button.secondary{background:#26304d;color:#fff}.status{margin-top:18px;min-heigh
 <main class="card">
 <div class="dog">🐶</div>
 <h1>SoyPerritoProProYT.IAOFICIAL</h1>
-<p class="muted">Conecta tu cuenta de GitHub de forma segura para usarla con tu IA.</p>
-
-<button id="github">🐙 Conectar con GitHub</button>
+<p class="muted">Elige qué quieres permitir a SoyPerritoProProYT.IAOFICIAL.</p>
+<button id="read">👀 Sí, solo ver mi GitHub</button>
+<button id="write">✏️ Sí, permitir crear y modificar archivos</button>
+<button id="deny" class="secondary">❌ No, no doy permiso</button>
 <button id="logout" class="secondary hidden">Cerrar conexión</button>
 
 <div id="user" class="user hidden"></div>
@@ -29,7 +30,7 @@ button.secondary{background:#26304d;color:#fff}.status{margin-top:18px;min-heigh
 </main>
 
 <script>
-const button=document.getElementById('github');
+const read=document.getElementById('read');const write=document.getElementById('write');const deny=document.getElementById('deny');
 const logout=document.getElementById('logout');
 const status=document.getElementById('status');
 const user=document.getElementById('user');
@@ -39,13 +40,13 @@ async function checkConnection(){
     const r=await fetch('/api/github-me',{credentials:'same-origin'});
     const data=await r.json();
     if(data.connected){
-      button.classList.add('hidden');
+      read.classList.add('hidden');write.classList.add('hidden');deny.classList.add('hidden');
       logout.classList.remove('hidden');
       user.classList.remove('hidden');
       user.innerHTML='<strong>🐙 GitHub conectado</strong><br>Cuenta: <b>'+escapeHtml(data.login)+'</b>';
       status.textContent='🟢 Conexión activa.';
     }else{
-      button.classList.remove('hidden');
+      read.classList.remove('hidden');write.classList.remove('hidden');deny.classList.remove('hidden');
       logout.classList.add('hidden');
       user.classList.add('hidden');
       status.textContent='⚪ GitHub no está conectado.';
