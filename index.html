@@ -56,10 +56,14 @@ async function checkConnection(){
   }
 }
 
-button.addEventListener('click',()=>{
+read.addEventListener('click',()=>{
   status.textContent='🔐 Abriendo GitHub...';
-  window.location.href='/api/github-auth?action=login';
+  window.location.href='/api/github-auth?action=login&permission=read';
 });
+
+write.addEventListener('click',()=>{ status.textContent='🔐 Abriendo GitHub para autorizar escritura...'; window.location.href='/api/github-auth?action=login&permission=write'; });
+
+deny.addEventListener('click',()=>{ status.textContent='❌ No se ha concedido permiso.'; });
 
 logout.addEventListener('click',async()=>{
   status.textContent='🔐 Cerrando conexión...';
