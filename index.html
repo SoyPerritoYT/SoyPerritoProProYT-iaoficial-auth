@@ -11,7 +11,6 @@ body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:syste
 .dog{font-size:64px}.muted{color:#aeb8d0;line-height:1.5}
 button{width:100%;min-height:48px;margin-top:18px;border:0;border-radius:14px;background:#fff;color:#111827;font-size:16px;font-weight:700;cursor:pointer}
 button.secondary{background:#26304d;color:#fff}.status{margin-top:18px;min-height:24px;color:#aeb8d0}
-.user{margin-top:20px;padding:16px;border-radius:16px;background:#0d1426;text-align:left}
 .hidden{display:none}
 </style>
 </head>
@@ -23,59 +22,13 @@ button.secondary{background:#26304d;color:#fff}.status{margin-top:18px;min-heigh
 <button id="read">👀 Sí, solo ver mi GitHub</button>
 <button id="write">✏️ Sí, permitir crear y modificar archivos</button>
 <button id="deny" class="secondary">❌ No, no doy permiso</button>
-<button id="logout" class="secondary hidden">Cerrar conexión</button>
-
-<div id="user" class="user hidden"></div>
-<div id="status" class="status" aria-live="polite">Comprobando conexión...</div>
+<div id="status" class="status" aria-live="polite">Elige una opción para continuar.</div>
 </main>
-
 <script>
-const read=document.getElementById('read');const write=document.getElementById('write');const deny=document.getElementById('deny');
-const logout=document.getElementById('logout');
-const status=document.getElementById('status');
-const user=document.getElementById('user');
-
-async function checkConnection(){
-  try{
-    const r=await fetch('/api/github-me',{credentials:'same-origin'});
-    const data=await r.json();
-    if(data.connected){
-      read.classList.add('hidden');write.classList.add('hidden');deny.classList.add('hidden');
-      logout.classList.remove('hidden');
-      user.classList.remove('hidden');
-      user.innerHTML='<strong>🐙 GitHub conectado</strong><br>Cuenta: <b>'+escapeHtml(data.login)+'</b>';
-      status.textContent='🟢 Conexión activa.';
-    }else{
-      read.classList.remove('hidden');write.classList.remove('hidden');deny.classList.remove('hidden');
-      logout.classList.add('hidden');
-      user.classList.add('hidden');
-      status.textContent='⚪ GitHub no está conectado.';
-    }
-  }catch{
-    status.textContent='❌ No se pudo comprobar la conexión.';
-  }
-}
-
-read.addEventListener('click',()=>{
-  status.textContent='🔐 Abriendo GitHub...';
-  window.location.href='/api/github-auth?action=login&permission=read';
-});
-
-write.addEventListener('click',()=>{ status.textContent='🔐 Abriendo GitHub para autorizar escritura...'; window.location.href='/api/github-auth?action=login&permission=write'; });
-
-deny.addEventListener('click',()=>{ status.textContent='❌ No se ha concedido permiso.'; });
-
-logout.addEventListener('click',async()=>{
-  status.textContent='🔐 Cerrando conexión...';
-  await fetch('/api/github-logout',{method:'POST',credentials:'same-origin'});
-  await checkConnection();
-});
-
-function escapeHtml(value){
-  return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-checkConnection();
+const MAIN="https://soyperritoproproyt-iaoficial.vercel.app";
+document.getElementById("read").onclick=()=>location.href=MAIN+"/api/github-auth?action=login&permission=read";
+document.getElementById("write").onclick=()=>location.href=MAIN+"/api/github-auth?action=login&permission=write";
+document.getElementById("deny").onclick=()=>document.getElementById("status").textContent="❌ No se ha concedido permiso.";
 </script>
 </body>
 </html>
