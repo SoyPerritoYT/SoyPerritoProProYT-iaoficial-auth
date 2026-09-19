@@ -14,13 +14,6 @@ function baseUrl(req) {
   return process.env.AUTH_BASE_URL || `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
 }
 
-function signSession(data) {
-  const payload = Buffer.from(JSON.stringify(data)).toString("base64url");
-  const secret = process.env.GITHUB_CLIENT_SECRET;
-  const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
-  return payload + "." + signature;
-}
-
 export default async function handler(req, res) {
   const { code, state, action, error, permission } = req.query || {};
   const origin = baseUrl(req);
@@ -75,19 +68,12 @@ export default async function handler(req, res) {
   const user = await userResponse.json();
   if (!user.login) return res.status(401).send("No se pudo obtener la cuenta de GitHub.");
 
-  const session = signSession({
-    token: token.access_token,
-    login: user.login,
-    permission: selectedPermission,
-    exp: Date.now() + 3600000
-  });
-
-  res.setHeader("Set-Cookie", [
+    res.setHeader("Set-Cookie", [
     cookie("github_token", token.access_token, {maxAge:3600,httpOnly:true,secure:true,sameSite:"None"}),
     cookie("github_permission", selectedPermission, {maxAge:3600,httpOnly:true,secure:true,sameSite:"None"}),
     cookie("github_oauth_state", "", {maxAge:0,httpOnly:true,secure:true,sameSite:"Lax"}),
     cookie("github_oauth_permission", "", {maxAge:0,httpOnly:true,secure:true,sameSite:"Lax"})
   ]);
 
-  return res.redirect(mainUrl + "?github=connected&github_login=" + encodeURIComponent(user.login) + "&github_session=" + encodeURIComponent(session));
+  return res.redirect(mainUrl + "?github=connected&github_login=" + encodeURIComponent(user.login));
 }
