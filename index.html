@@ -25,9 +25,9 @@ button.secondary{background:#26304d;color:#fff}.status{margin-top:18px;min-heigh
 <div id="status" class="status" aria-live="polite">Elige una opción para continuar.</div>
 </main>
 <script>
-const MAIN="https://soyperritoproproyt-iaoficial.vercel.app";
-document.getElementById("read").onclick=()=>location.href=MAIN+"/api/github-auth?action=login&permission=read";
-document.getElementById("write").onclick=()=>location.href=MAIN+"/api/github-auth?action=login&permission=write";
+const AUTH="https://soy-perrito-pro-pro-yt-iaoficial-au.vercel.app";
+document.getElementById("read").onclick=()=>location.href=AUTH+"/api/github-auth?action=login&permission=read";
+document.getElementById("write").onclick=()=>location.href=AUTH+"/api/github-auth?action=login&permission=write";
 document.getElementById("deny").onclick=()=>document.getElementById("status").textContent="❌ No se ha concedido permiso.";
 </script>
 </body>
