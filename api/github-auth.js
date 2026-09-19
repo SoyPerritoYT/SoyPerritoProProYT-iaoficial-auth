@@ -18,8 +18,9 @@ export default async function handler(req, res) {
   const { code, state, action, error, permission } = req.query || {};
   const origin = baseUrl(req);
   const callback = origin + "/api/github-auth";
+  const mainUrl = process.env.MAIN_APP_URL || "https://soyperritoproproyt-iaoficial.vercel.app/";
 
-  if (error) return res.redirect("/?github_error=" + encodeURIComponent(String(error)));
+  if (error) return res.redirect(mainUrl + "?github_error=" + encodeURIComponent(String(error)));
 
   if (action === "login") {
     const selectedPermission = permission === "write" ? "write" : "read";
@@ -77,19 +78,18 @@ export default async function handler(req, res) {
   const user = await userResponse.json();
   if (!user.login) return res.status(401).send("No se pudo obtener la cuenta de GitHub.");
 
+  const selectedPermission = permission === "write" ? "write" : "read";
   res.setHeader("Set-Cookie", [
     cookie("github_token", token.access_token, {
-      maxAge: 3600, httpOnly: true, secure: true, sameSite: "Lax"
+      maxAge: 3600, httpOnly: true, secure: true, sameSite: "None"
+    }),
+    cookie("github_permission", selectedPermission, {
+      maxAge: 3600, httpOnly: true, secure: true, sameSite: "None"
     }),
     cookie("github_oauth_state", "", {
       maxAge: 0, httpOnly: true, secure: true, sameSite: "Lax"
     })
   ]);
-  const selectedPermission = permission === "write" ? "write" : "read";
-  const payload = Buffer.from(JSON.stringify({ token: token.access_token, login: user.login, permission: selectedPermission, exp: Date.now() + 10 * 60 * 1000 })).toString("base64url");
-  const secret = process.env.AUTH_GITHUB_SESSION_SECRET;
-  if (!secret) return res.status(500).send("Falta AUTH_GITHUB_SESSION_SECRET en Vercel.");
-  const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
-  const mainUrl = process.env.MAIN_APP_URL || "https://soyperritoproproyt-iaoficial.vercel.app/";
-  return res.redirect(mainUrl + "#github_token=" + encodeURIComponent(payload + "." + signature));
+
+  return res.redirect(mainUrl + "?github=connected");
 }
