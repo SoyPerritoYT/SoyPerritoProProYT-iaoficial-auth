@@ -21,7 +21,8 @@ export default async function handler(req, res) {
 
   if (error) return res.redirect("/?github_error=" + encodeURIComponent(String(error)));
 
-  if (action === "login") {\n    const selectedPermission = permission === "write" ? "write" : "read";
+  if (action === "login") {
+    const selectedPermission = permission === "write" ? "write" : "read";
     const clientId = process.env.GITHUB_CLIENT_ID;
     if (!clientId) return res.status(500).send("Falta GITHUB_CLIENT_ID en Vercel.");
 
@@ -84,7 +85,8 @@ export default async function handler(req, res) {
       maxAge: 0, httpOnly: true, secure: true, sameSite: "Lax"
     })
   ]);
-  const selectedPermission = permission === "write" ? "write" : "read";\n  const payload = Buffer.from(JSON.stringify({ token: token.access_token, login: user.login, permission: selectedPermission, exp: Date.now() + 10 * 60 * 1000 })).toString("base64url");
+  const selectedPermission = permission === "write" ? "write" : "read";
+  const payload = Buffer.from(JSON.stringify({ token: token.access_token, login: user.login, permission: selectedPermission, exp: Date.now() + 10 * 60 * 1000 })).toString("base64url");
   const secret = process.env.AUTH_GITHUB_SESSION_SECRET;
   if (!secret) return res.status(500).send("Falta AUTH_GITHUB_SESSION_SECRET en Vercel.");
   const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
