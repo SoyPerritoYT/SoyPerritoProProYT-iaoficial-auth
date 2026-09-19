@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     const authUrl = new URL("https://github.com/login/oauth/authorize");
     authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("redirect_uri", callback);
-    authUrl.searchParams.set("scope", "read:user");
+    authUrl.searchParams.set("scope", "public_repo");
     authUrl.searchParams.set("state", stateValue);
 
     res.setHeader("Set-Cookie", cookie("github_oauth_state", stateValue, {
@@ -84,5 +84,10 @@ export default async function handler(req, res) {
       maxAge: 0, httpOnly: true, secure: true, sameSite: "Lax"
     })
   ]);
-  return res.redirect("/?github=connected");
+  const payload = Buffer.from(JSON.stringify({ token: token.access_token, login: user.login, exp: Date.now() + 10 * 60 * 1000 })).toString("base64url");
+  const secret = process.env.AUTH_GITHUB_SESSION_SECRET;
+  if (!secret) return res.status(500).send("Falta AUTH_GITHUB_SESSION_SECRET en Vercel.");
+  const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+  const mainUrl = process.env.MAIN_APP_URL || "https://soyperritoproproyt-iaoficial.vercel.app/";
+  return res.redirect(mainUrl + "#github_token=" + encodeURIComponent(payload + "." + signature));
 }
