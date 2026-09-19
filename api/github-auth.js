@@ -34,9 +34,14 @@ export default async function handler(req, res) {
     authUrl.searchParams.set("scope", selectedPermission === "write" ? "public_repo" : "read:user");
     authUrl.searchParams.set("state", stateValue);
 
-    res.setHeader("Set-Cookie", cookie("github_oauth_state", stateValue, {
-      maxAge: 600, httpOnly: true, secure: true, sameSite: "Lax"
-    }));
+    res.setHeader("Set-Cookie", [
+      cookie("github_oauth_state", stateValue, {
+        maxAge: 600, httpOnly: true, secure: true, sameSite: "Lax"
+      }),
+      cookie("github_oauth_permission", selectedPermission, {
+        maxAge: 600, httpOnly: true, secure: true, sameSite: "Lax"
+      })
+    ]);
     return res.redirect(authUrl.toString());
   }
 
@@ -47,6 +52,9 @@ export default async function handler(req, res) {
   if (!expectedState || state !== expectedState) {
     return res.status(400).send("Estado OAuth no válido. Vuelve a iniciar la conexión.");
   }
+
+  const permissionCookie = req.headers.cookie?.match(/(?:^|; )github_oauth_permission=([^;]*)/)?.[1];
+  const selectedPermission = permissionCookie === "write" ? "write" : "read";
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
@@ -78,7 +86,6 @@ export default async function handler(req, res) {
   const user = await userResponse.json();
   if (!user.login) return res.status(401).send("No se pudo obtener la cuenta de GitHub.");
 
-  const selectedPermission = permission === "write" ? "write" : "read";
   res.setHeader("Set-Cookie", [
     cookie("github_token", token.access_token, {
       maxAge: 3600, httpOnly: true, secure: true, sameSite: "None"
@@ -88,8 +95,11 @@ export default async function handler(req, res) {
     }),
     cookie("github_oauth_state", "", {
       maxAge: 0, httpOnly: true, secure: true, sameSite: "Lax"
+    }),
+    cookie("github_oauth_permission", "", {
+      maxAge: 0, httpOnly: true, secure: true, sameSite: "Lax"
     })
   ]);
 
-  return res.redirect(mainUrl + "?github=connected");
+  return res.redirect(mainUrl + "?github=connected&github_login=" + encodeURIComponent(user.login));
 }
